@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Image to Image Generator</title>
+<title>Seedream 4.0 Image to Image</title>
 
 <style>
 body{
@@ -37,7 +37,7 @@ border-radius:10px;
 
 <body>
 
-<h2>Image → Image Generator</h2>
+<h2>Seedream 4.0 Image → Image Generator</h2>
 
 <input type="file" id="imageInput" accept="image/*">
 
@@ -47,7 +47,7 @@ border-radius:10px;
 
 <br>
 
-<button onclick="generateImage()">Generate</button>
+<button onclick="generateImage()">Generate Image</button>
 
 <div id="status"></div>
 
@@ -88,7 +88,7 @@ reader.readAsDataURL(imageFile);
 try{
 
 const result = await puter.ai.txt2img(prompt,{
-model:"togetherai:black-forest-labs/flux.1-dev",
+model:"togetherai:bytedance-seed/seedream-4.0",
 input_reference:imageDataUrl,
 size:"1024x1024"
 });
@@ -110,12 +110,16 @@ else if(result.data && result.data[0].b64_json){
 imageData="data:image/png;base64,"+result.data[0].b64_json;
 }
 
+if(!imageData){
+throw new Error("No image returned");
+}
+
 const img=document.createElement("img");
 img.src=imageData;
 
 output.appendChild(img);
 
-status.innerHTML="Image generated";
+status.innerHTML="Image generated successfully";
 
 }catch(error){
 
