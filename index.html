@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Seedream 4.0 Image to Image</title>
+<title>AI Image-to-Image Generator</title>
 
 <style>
 body{
@@ -12,24 +12,63 @@ text-align:center;
 padding:40px;
 }
 
+.container{
+max-width:700px;
+margin:auto;
+background:#1e1e1e;
+padding:25px;
+border-radius:10px;
+}
+
 textarea{
-width:90%;
-height:80px;
+width:100%;
+height:90px;
+padding:10px;
+border-radius:6px;
+margin-top:10px;
+}
+
+input[type="file"]{
+margin-top:10px;
+}
+
+button{
+padding:12px 20px;
+margin-top:15px;
+font-size:16px;
+cursor:pointer;
+border:none;
+border-radius:6px;
+background:#4CAF50;
+color:white;
+}
+
+button:hover{
+background:#45a049;
+}
+
+img{
+max-width:100%;
+margin-top:20px;
+border-radius:10px;
+}
+
+.status{
+margin-top:15px;
 padding:10px;
 border-radius:6px;
 }
 
-button{
-padding:10px 20px;
-margin-top:15px;
-font-size:16px;
-cursor:pointer;
+.loading{
+background:#333;
 }
 
-img{
-max-width:90%;
-margin-top:20px;
-border-radius:10px;
+.error{
+background:#5c1a1a;
+}
+
+.success{
+background:#1a5c2e;
 }
 </style>
 
@@ -37,21 +76,25 @@ border-radius:10px;
 
 <body>
 
-<h2>Seedream 4.0 Image → Image Generator</h2>
+<div class="container">
+
+<h2>Image → Image AI Generator</h2>
+
+<p>Upload an image and describe the changes.</p>
 
 <input type="file" id="imageInput" accept="image/*">
 
-<br><br>
-
-<textarea id="promptInput" placeholder="Describe the change..."></textarea>
+<textarea id="promptInput" placeholder="Example: keep same person and pose, cinematic lighting, ultra realistic"></textarea>
 
 <br>
 
 <button onclick="generateImage()">Generate Image</button>
 
-<div id="status"></div>
+<div id="status" class="status"></div>
 
 <div id="output"></div>
+
+</div>
 
 <script src="https://js.puter.com/v2/"></script>
 
@@ -66,16 +109,18 @@ const status=document.getElementById("status");
 const output=document.getElementById("output");
 
 if(!imageFile){
-alert("Upload an image first");
+alert("Please upload an image first");
 return;
 }
 
 if(!prompt){
-alert("Enter a prompt");
+alert("Please enter a prompt");
 return;
 }
 
-status.innerHTML="Generating image...";
+status.className="status loading";
+status.innerHTML="Generating image... please wait";
+
 output.innerHTML="";
 
 const reader=new FileReader();
@@ -88,7 +133,7 @@ reader.readAsDataURL(imageFile);
 try{
 
 const result = await puter.ai.txt2img(prompt,{
-model:"togetherai:bytedance-seed/seedream-4.0",
+model:"togetherai:black-forest-labs/flux.1-kontext-dev",
 input_reference:imageDataUrl,
 size:"1024x1024"
 });
@@ -111,7 +156,7 @@ imageData="data:image/png;base64,"+result.data[0].b64_json;
 }
 
 if(!imageData){
-throw new Error("No image returned");
+throw new Error("No image returned from API");
 }
 
 const img=document.createElement("img");
@@ -119,11 +164,21 @@ img.src=imageData;
 
 output.appendChild(img);
 
+const download=document.createElement("a");
+download.href=imageData;
+download.download="generated-image.png";
+download.innerHTML="<br>Download Image";
+
+output.appendChild(download);
+
+status.className="status success";
 status.innerHTML="Image generated successfully";
 
 }catch(error){
 
 console.error(error);
+
+status.className="status error";
 status.innerHTML="Error: "+error.message;
 
 }
