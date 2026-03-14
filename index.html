@@ -141,16 +141,16 @@ reader.readAsDataURL(imageFile);
 });
 
 const options = {
-model:"flux-schnell",
-input_reference:imageDataUrl,
-size:"1024x1024"
+model: "togetherai:bytedance-seed/seedream-4.0",
+input_reference: imageDataUrl,
+size: "1024x1024"
 };
 
 const result = await puter.ai.txt2img(prompt, options);
 
 const img = document.createElement("img");
-
 img.src = result.url;
+img.style.maxWidth = "100%";
 
 output.appendChild(img);
 
