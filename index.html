@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>AI Image-to-Image Generator</title>
+<title>Image to Image Generator</title>
 
 <style>
 body{
@@ -22,14 +22,10 @@ border-radius:10px;
 
 textarea{
 width:100%;
-height:90px;
+height:80px;
 padding:10px;
+margin-top:10px;
 border-radius:6px;
-margin-top:10px;
-}
-
-input[type="file"]{
-margin-top:10px;
 }
 
 button{
@@ -37,14 +33,10 @@ padding:12px 20px;
 margin-top:15px;
 font-size:16px;
 cursor:pointer;
+background:#4CAF50;
 border:none;
 border-radius:6px;
-background:#4CAF50;
 color:white;
-}
-
-button:hover{
-background:#45a049;
 }
 
 img{
@@ -58,18 +50,6 @@ margin-top:15px;
 padding:10px;
 border-radius:6px;
 }
-
-.loading{
-background:#333;
-}
-
-.error{
-background:#5c1a1a;
-}
-
-.success{
-background:#1a5c2e;
-}
 </style>
 
 </head>
@@ -78,17 +58,13 @@ background:#1a5c2e;
 
 <div class="container">
 
-<h2>Image → Image AI Generator</h2>
-
-<p>Upload an image and describe the changes.</p>
+<h2>AI Image → Image Generator</h2>
 
 <input type="file" id="imageInput" accept="image/*">
 
-<textarea id="promptInput" placeholder="Example: keep same person and pose, cinematic lighting, ultra realistic"></textarea>
+<textarea id="promptInput" placeholder="Example: keep same person and pose, cinematic lighting"></textarea>
 
-<br>
-
-<button onclick="generateImage()">Generate Image</button>
+<button onclick="generateImage()">Generate</button>
 
 <div id="status" class="status"></div>
 
@@ -109,18 +85,16 @@ const status=document.getElementById("status");
 const output=document.getElementById("output");
 
 if(!imageFile){
-alert("Please upload an image first");
+alert("Upload an image first");
 return;
 }
 
 if(!prompt){
-alert("Please enter a prompt");
+alert("Enter a prompt");
 return;
 }
 
-status.className="status loading";
-status.innerHTML="Generating image... please wait";
-
+status.innerHTML="Generating image...";
 output.innerHTML="";
 
 const reader=new FileReader();
@@ -133,7 +107,7 @@ reader.readAsDataURL(imageFile);
 try{
 
 const result = await puter.ai.txt2img(prompt,{
-model:"togetherai:black-forest-labs/flux.1-kontext-dev",
+model:"togetherai:black-forest-labs/flux.1-dev",
 input_reference:imageDataUrl,
 size:"1024x1024"
 });
@@ -156,7 +130,7 @@ imageData="data:image/png;base64,"+result.data[0].b64_json;
 }
 
 if(!imageData){
-throw new Error("No image returned from API");
+throw new Error("No image returned");
 }
 
 const img=document.createElement("img");
@@ -164,21 +138,11 @@ img.src=imageData;
 
 output.appendChild(img);
 
-const download=document.createElement("a");
-download.href=imageData;
-download.download="generated-image.png";
-download.innerHTML="<br>Download Image";
-
-output.appendChild(download);
-
-status.className="status success";
 status.innerHTML="Image generated successfully";
 
 }catch(error){
 
 console.error(error);
-
-status.className="status error";
 status.innerHTML="Error: "+error.message;
 
 }
