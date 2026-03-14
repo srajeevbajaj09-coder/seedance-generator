@@ -152,30 +152,30 @@ console.log("API response:", result);
 
 const img = document.createElement("img");
 
-let imageUrl = null;
+let imageData = null;
 
-if (typeof result === "string") {
-    imageUrl = result;
+// handle base64 images
+if (typeof result === "string" && result.startsWith("data:image")) {
+    imageData = result;
 }
-else if (result?.url) {
-    imageUrl = result.url;
-}
-else if (result?.image) {
-    imageUrl = result.image;
+else if (result?.image && result.image.startsWith("data:image")) {
+    imageData = result.image;
 }
 else if (result?.images && result.images.length > 0) {
-    imageUrl = result.images[0];
+    imageData = result.images[0];
 }
-else if (result?.data && result.data.length > 0 && result.data[0].url) {
-    imageUrl = result.data[0].url;
+else if (result?.data && result.data.length > 0) {
+    imageData = result.data[0].b64_json
+        ? "data:image/png;base64," + result.data[0].b64_json
+        : result.data[0].url;
 }
 
-if (!imageUrl) {
+if (!imageData) {
     console.error(result);
     throw new Error("No image returned from API");
 }
 
-img.src = imageUrl;
+img.src = imageData;
 img.style.maxWidth = "100%";
 
 output.appendChild(img);
