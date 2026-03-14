@@ -148,20 +148,27 @@ size: "1024x1024"
 
 const result = await puter.ai.txt2img(prompt, options);
 
+console.log(result); // debug
+
 const img = document.createElement("img");
 
-img.src =
-    result.url ||
-    result.image ||
-    (result.images ? result.images[0] : null);
-
-if(!img.src){
-    console.log(result);
-    throw new Error("Image URL not found in response");
+if (typeof result === "string") {
+    img.src = result;
+}
+else if (result.url) {
+    img.src = result.url;
+}
+else if (result.image) {
+    img.src = result.image;
+}
+else if (result.images && result.images.length > 0) {
+    img.src = result.images[0];
+}
+else {
+    throw new Error("No image returned from API");
 }
 
 img.style.maxWidth = "100%";
-
 output.appendChild(img);
 
 status.className="status success";
