@@ -149,7 +149,17 @@ size: "1024x1024"
 const result = await puter.ai.txt2img(prompt, options);
 
 const img = document.createElement("img");
-img.src = result.url;
+
+img.src =
+    result.url ||
+    result.image ||
+    (result.images ? result.images[0] : null);
+
+if(!img.src){
+    console.log(result);
+    throw new Error("Image URL not found in response");
+}
+
 img.style.maxWidth = "100%";
 
 output.appendChild(img);
