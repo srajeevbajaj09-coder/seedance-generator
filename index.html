@@ -1,55 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Seedance Image Generator</title>
+<title>Image to Image Generator</title>
 
 <style>
 body{
 font-family:Arial;
-background:#f4f4f4;
-padding:30px;
+background:#111;
+color:white;
+text-align:center;
+padding:40px;
 }
 
-.container{
-max-width:700px;
-background:white;
-padding:20px;
-border-radius:10px;
-margin:auto;
+textarea{
+width:90%;
+height:80px;
+padding:10px;
+border-radius:6px;
 }
 
 button{
 padding:10px 20px;
+margin-top:15px;
 font-size:16px;
-margin-top:10px;
 cursor:pointer;
 }
 
 img{
-max-width:100%;
+max-width:90%;
 margin-top:20px;
 border-radius:10px;
-}
-
-.status{
-padding:10px;
-margin-top:10px;
-border-radius:5px;
-}
-
-.loading{
-background:#fff3cd;
-border-left:4px solid orange;
-}
-
-.success{
-background:#d4edda;
-border-left:4px solid green;
-}
-
-.error{
-background:#f8d7da;
-border-left:4px solid red;
 }
 </style>
 
@@ -57,140 +37,90 @@ border-left:4px solid red;
 
 <body>
 
-<div class="container">
+<h2>Image → Image Generator</h2>
 
-<h2>Seedance Image Generator</h2>
-
-<h3>Upload Image</h3>
 <input type="file" id="imageInput" accept="image/*">
 
-<br>
-<img id="preview" style="display:none;max-width:300px;">
+<br><br>
 
-<h3>Prompt</h3>
-<textarea id="promptInput" rows="4" cols="60"
-placeholder="romantic cinematic couple portrait, soft lighting"></textarea>
+<textarea id="promptInput" placeholder="Describe the change..."></textarea>
 
 <br>
 
-<button id="generateBtn">Generate Image</button>
+<button onclick="generateImage()">Generate</button>
 
-<div id="status" class="status"></div>
+<div id="status"></div>
 
 <div id="output"></div>
-
-</div>
 
 <script src="https://js.puter.com/v2/"></script>
 
 <script>
 
-document.addEventListener("DOMContentLoaded", function() {
-
-const imageInput = document.getElementById("imageInput");
-const preview = document.getElementById("preview");
-const button = document.getElementById("generateBtn");
-
-imageInput.addEventListener("change", function(e){
-
-const reader = new FileReader();
-
-reader.onload = function(e){
-preview.src = e.target.result;
-preview.style.display = "block";
-}
-
-reader.readAsDataURL(e.target.files[0]);
-
-});
-
-button.addEventListener("click", generateImage);
-
-});
-
 async function generateImage(){
 
-const imageFile = document.getElementById("imageInput").files[0];
-const prompt = document.getElementById("promptInput").value;
+const imageFile=document.getElementById("imageInput").files[0];
+const prompt=document.getElementById("promptInput").value;
 
-const status = document.getElementById("status");
-const output = document.getElementById("output");
+const status=document.getElementById("status");
+const output=document.getElementById("output");
 
 if(!imageFile){
-alert("Upload image first");
+alert("Upload an image first");
 return;
 }
 
 if(!prompt){
-alert("Enter prompt");
+alert("Enter a prompt");
 return;
 }
 
-status.className="status loading";
 status.innerHTML="Generating image...";
-
 output.innerHTML="";
 
-try{
-
-const reader = new FileReader();
+const reader=new FileReader();
 
 const imageDataUrl = await new Promise(resolve=>{
-reader.onload = () => resolve(reader.result);
+reader.onload=()=>resolve(reader.result);
 reader.readAsDataURL(imageFile);
 });
 
-const options = {
-model: "togetherai:bytedance-seed/seedream-4.0",
-input_reference: imageDataUrl,
-size: "1024x1024"
-};
+try{
 
-const result = await puter.ai.txt2img(prompt, options);
+const result = await puter.ai.txt2img(prompt,{
+model:"togetherai:black-forest-labs/flux.1-dev",
+input_reference:imageDataUrl,
+size:"1024x1024"
+});
 
-console.log("API response:", result);
+console.log(result);
 
-const img = document.createElement("img");
+let imageData=null;
 
-let imageData = null;
-
-// handle base64 images
-if (typeof result === "string" && result.startsWith("data:image")) {
-    imageData = result;
+if(typeof result==="string"){
+imageData=result;
 }
-else if (result?.image && result.image.startsWith("data:image")) {
-    imageData = result.image;
+else if(result.image){
+imageData=result.image;
 }
-else if (result?.images && result.images.length > 0) {
-    imageData = result.images[0];
+else if(result.images){
+imageData=result.images[0];
 }
-else if (result?.data && result.data.length > 0) {
-    imageData = result.data[0].b64_json
-        ? "data:image/png;base64," + result.data[0].b64_json
-        : result.data[0].url;
+else if(result.data && result.data[0].b64_json){
+imageData="data:image/png;base64,"+result.data[0].b64_json;
 }
 
-if (!imageData) {
-    console.error(result);
-    throw new Error("No image returned from API");
-}
-
-img.src = imageData;
-img.style.maxWidth = "100%";
+const img=document.createElement("img");
+img.src=imageData;
 
 output.appendChild(img);
 
-status.className="status success";
-status.innerHTML="Image generated successfully";
+status.innerHTML="Image generated";
 
-}
-
-catch(error){
-
-status.className="status error";
-status.innerHTML="Error: " + error.message;
+}catch(error){
 
 console.error(error);
+status.innerHTML="Error: "+error.message;
 
 }
 
